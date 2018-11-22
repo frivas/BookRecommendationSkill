@@ -45,15 +45,15 @@
         "price": "29.90"
       },
       {
-        "title": "Historia de la Ciencia",
-        "author": "Juan Antonio García Velasco",
-        "publishingDate": "2013",
-        "pages": "208",
-        "oneLiner": "De un día para otro, todas las mujeres que te rodean están embarazadas: tu hermana, tu amiga, tu compañera de la oficina, y hasta la vecina que no soportas. Y tú, esbozas una sonrisa y tratas de salir airosamente del temido «¿Y tú para cuando?».",
-        "synopsis": "Si llevas tiempo pensando en ello, si miras obsesivamente el calendario los días de tu ovulación, si organizas tu vida sexual pensando en la reproducción, si piensas que todo el mundo que te rodea tiene hijos con una facilidad extrema y tú no, significa que, quizá, necesites este libro. Con Quiero ser madre te darás cuenta de que no todo el mundo se embaraza con esa facilidad que tú percibes, si bien es cierto que nadie te cuenta lo que ha hecho para embarazarse. La esterilidad no es un tema del que se hable con naturalidad. Este libro desmitifica todo este proceso y verás que es más sencillo de lo que imaginabas. Con Quiero ser madre ese deseo puede convertirse en una realidad.",
+        "title": "Inteligencia artificial",
+        "author": "Lasse Rouhiainen",
+        "publishingDate": "2018",
+        "pages": "352",
+        "oneLiner": "Una guía para estar en el bando ganador cuando la tecnología transforme el mundo por completo: anticípate a lo que viene.",
+        "synopsis": "La inteligencia artificial nos ayuda a hacer casi todo más barato, más rápido, más efectivo y cambiará profundamente sectores como el de la conducción, los viajes, la salud, educación, comercio, agricultura, finanzas, ventas y el marketing. De hecho, la inteligencia artificial cambiará drásticamente nuestra sociedad de forma global. Este libro incluye fascinantes e interesantes temas relacionados con la inteligencia artificial y también nos da acceso a un gran número de recursos, ideas y consejos que ayudarán a entender cómo la inteligencia artificial va a cambiar nuestra vida..",
         "language": "Español",
-        "collection": "Fuera de Colección y One Shot",
-        "price": "19.90"
+        "collection": "Colección Alienta",
+        "price": "14.95"
       }
     ],
     "Religión": [
@@ -115,7 +115,7 @@
     ],
     "Empresa": [
       {
-        "title": "La economia de la manipulación",
+        "title": "La economía de la manipulación",
         "author": "George Akerlof y Robert J. Shiller",
         "publishingDate": "2016",
         "pages": "368",

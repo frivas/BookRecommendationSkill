@@ -38,13 +38,13 @@ book_catalogue = get_catalogue()
 @ssb.request_handler(can_handle_func=is_request_type('LaunchRequest'))
 def launch_request_handler(handler_input):
 
-    attritbutes = handler_input.attributes_manager.persistent_attributes
+    attributes = handler_input.attributes_manager.persistent_attributes
 
-    if not attritbutes:
-        attritbutes['topic'] = ''
-        attritbutes['bookTitle'] = ''
+    if not attributes:
+        attributes['topic'] = ''
+        attributes['title'] = ''
 
-    handler_input.attributes_manager.session_attributes = attritbutes
+    handler_input.attributes_manager.session_attributes = attributes
 
     output_speech = 'Hola apasionados de la lectura. ¡Bienvenidos a Planeta Recomienda!. ¿Qué temática en literatura te gusta?. Ciencia, empresas, negocios...'
     re_prompt = '¿Que tipo de literatura te gusta?. Puedes pedirme ayuda diciendo, ayuda.'
@@ -81,7 +81,7 @@ def session_ended_request_handler(handler_input):
 def all_exception_handler(handler_input, exception):
 
     logger.info('Ha habido el siguiente problema {}'.format(exception))
-    output_speech = 'Perdona, no he entendido lo que me has dicho. ¿Te importaria repetir?'
+    output_speech = 'Perdona, no he entendido lo que me has dicho. ¿Te importaría repetir?'
 
     return handler_input.response_builder.speak(output_speech).response
 
@@ -93,8 +93,12 @@ def book_recommendation_intent_handler(handler_input):
 
     for slot_name, current_slot in six.iteritems(slots):
         if slot_name == 'topic':
+            # All the events have a Resolutions Per Authority except the one without a value for a slot
+            # In this case I support an empty slot because if it is I just select a random book
             if current_slot.resolutions and current_slot.resolutions.resolutions_per_authority[0]:
+                # Once I know the slot is not empty I check if there is a MATCH or not
                 if current_slot.resolutions.resolutions_per_authority[0].status.code == StatusCode.ER_SUCCESS_MATCH:
+
                     topic = current_slot.resolutions.resolutions_per_authority[0].values[0].value.name
 
                     if topic.capitalize() in book_catalogue.keys():
@@ -102,9 +106,16 @@ def book_recommendation_intent_handler(handler_input):
 
                         output_speech = f'He encontrado un libro que podría ser interesante. Tiene muy buenas opiniones. Su título es {random_book["title"]} de {random_book["author"]}. ¿Quieres saber más sobre el libro?.'
                         re_prompt = '¿Quieres saber más sobre este libro?'
+                        
+                        attributes['topic'] = topic
+                        attributes['title'] = random_book['title']
+                        persist_attributes(handler_input, attributes)
+                # If there is no match we inform the user we do not have the requested topic
                 else:
                     output_speech = f'Lo siento, ahora mismo no tenemos nada relacionado a {"info@planeta.es"}. Si te parece escribenos a la dirección de correo electrónico que te envío a la aplicación y nos pondremos en contacto contigo tan pronto tengamos disponibilidad'
-                    re_prompt = '¿Quieres busque algún otro libro?'
+                    re_prompt = '¿Quieres que busque algún otro libro de otra temática?'
+
+            # if there is no Resolutions Per Authority it means the slot is empty and we just need to generate a random book
             else:
                 topic = random.choice(list(book_catalogue.keys()))
                 random_book = random.choice(book_catalogue[topic])
@@ -112,27 +123,43 @@ def book_recommendation_intent_handler(handler_input):
                 output_speech = f'He encontrado un libro que podría ser interesante. Tiene muy buenas opiniones. Su título es {random_book["title"]} de {random_book["author"]}. ¿Quieres saber más sobre el libro?.'
                 re_prompt = '¿Quieres saber más sobre este libro?'
 
-    attributes['topic'] = topic if topic else ''
-    attributes['bookTitle'] = random_book["title"] if random_book["title"] else ''
+                attributes['topic'] = topic
+                attributes['title'] = random_book['title']
+                persist_attributes(handler_input, attributes)
+
+    return handler_input.response_builder.speak(output_speech).ask(re_prompt).set_card(SimpleCard('Planeta Recomienda', output_speech)).response
+
+
+@ssb.request_handler(can_handle_func=is_intent_name("AMAZON.YesIntent"))
+def yes_intent_handler(handler_input):
+    attributes = handler_input.attributes_manager.session_attributes
+
+    book_info = [info for info in book_catalogue[attributes['topic']] if info['title'] == attributes['title']]
+    print(book_info)
+
+    output_speech = f'{book_info[0]["title"]} se trata de {book_info[0]["synopsis"]}. Te envío información a la aplicación.'
+
+    card_info = f'{book_info[0]["title"]} de {book_info[0]["author"]} de la colección {book_info[0]["collection"]} por {book_info[0]["price"]}'
+
+    return handler_input.response_builder.speak(output_speech).set_card(SimpleCard('Planeta Recomienda', card_info)).response
+
+
+@ssb.request_handler(can_handle_func=is_intent_name("AMAZON.NoIntent"))
+def no_intent_handler(handler_input):
+    output_speech = 'Muchas gracias por utilizar Planeta Recomienda. Siempre puedes visitar nuestra página web o ponerte en contacto con nosotros por teléfono o correo electrónico, estaremos contentos de atenderte. Te envío nuestra información de contacto a la aplicación. ¡Hasta Pronto!'
+
+    card_info = f'Nuestra Web {"https://www.planeta.es/es"}. Teléfono: {"914 23 37 04"}. Correo Electrónico: {"info@planeta.es"}'
+
+    return handler_input.response_builder.speak(output_speech).set_card(SimpleCard('Planeta Recomienda', card_info)).response
+
+def persist_attributes(handler_input, attr):
+    attributes = handler_input.attributes_manager.session_attributes
+
+    attributes['topic'] = attr['topic']
+    attributes['title'] = attr['title']
 
     handler_input.attributes_manager.session_attributes = attributes
     handler_input.attributes_manager.persistent_attributes = attributes
     handler_input.attributes_manager.save_persistent_attributes()
-
-    return handler_input.response_builder.speak(output_speech).set_card(SimpleCard('Planeta Recomienda', output_speech)).response
-
-
-@ssb.request_handler(can_handle_func=is_request_type("AMAZON.YesIntent"))
-def yes_intent_handler(handler_input):
-    attributes = handler_input.attributes_manager.session_attributes
-
-    book_title = book_catalogue[attributes["topic"][attributes["title"]]]
-
-    output_speech = f'He encontrado un libro que podría ser interesante. Tiene muy buenas opiniones. Su título es {attributes["topic"]} de {random_book["topic"]}. ¿Quieres saber más sobre el libro?.'
-    re_prompt = '¿Quieres saber más sobre este libro?'
-
-    handler_input.response_builder.speak(output_speech)
-    return handler_input.response_builder.response
-
 
 handler = ssb.lambda_handler()
